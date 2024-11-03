@@ -10,6 +10,7 @@ onsale = 0
 offsale = 0
 pricechange = 0
 firstprice = 0
+first = 0
 
 # DO NOT SHARE
 # FULL COOKIE DATA NOT JUST ROBLOSECURITY
@@ -33,6 +34,11 @@ while True:
 
     price = data.get("PriceInRobux", [])
     
+    if first == 0:
+        webhook = DiscordWebhook(url=Webhook, content=f"Sniper has been set to target {name} (https://roblox.com/catalog/{ID})")
+        response = webhook.execute()
+        first = 1 
+        
     if sale:
         if onsale == 0 and status == 200:               
             print(f"{name} Is onsale for {price}")
