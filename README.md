@@ -1,4 +1,5 @@
 **ROBLOX ACCESSORY SNIPER**
+
 Instructions:
 1. Set item ID of the accessory you want
 2. edit time per request if you want
@@ -11,3 +12,5 @@ make sure you have the discord_webhook dependency (open command prompt, then typ
 
 If you are getting 429 too many requests, your cookie is invalid
 your cookie isnt going to last forever, to maximise duration grab an alt accounts cookie, then log out and leave it be.
+
+THIS DOESN'T WORK WITH BUNDLES ONLY ACCESSORIES
