@@ -68,7 +68,7 @@ while True:
     else:
         if offsale == 0:           
             print("offsale")
-            webhook = DiscordWebhook(url=Webhook, content="item is offsale")
+            webhook = DiscordWebhook(url=Webhook, content=f"{name} is offsale :(")
             response = webhook.execute()
             onsale = 0
             offsale = 1
