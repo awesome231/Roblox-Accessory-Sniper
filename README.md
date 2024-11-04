@@ -11,6 +11,6 @@ Instructions:
 make sure you have the discord_webhook dependency (open command prompt, then type in the command: pip install discord_webhook)
 
 If you are getting 429 too many requests, your cookie is invalid
-your cookie isnt going to last forever, to maximise duration grab an alt accounts cookie, then log out and leave it be.
+your cookie isnt going to last forever, to maximize duration grab an alt accounts cookie, then log out and leave it be.
 
 THIS DOESN'T WORK WITH BUNDLES ONLY ACCESSORIES
