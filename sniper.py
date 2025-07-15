@@ -2,138 +2,81 @@ import requests
 import time
 from discord_webhook import DiscordWebhook
 
-ID =  #PUT ACCESSORY HERE
-bundle = 0 # SET TO 0 FOR ACCESSORY, SET TO 1 FOR A BUNDLE
-timeperrequest = 2 #EDIT TIME PER REQUEST
-Webhook = "" # DO NOT SHARE
+IDS = [] #separated by comma
 
-onsale = 0
-offsale = 0
-pricechange = 0
-firstprice = 0
-first = 0
+timeperrequest = 1 # recommend more time for less items, and vice versa
+Webhook = "" # do not share
 
-# DO NOT SHARE
-cookie = ""
+idstat = {}
 
-headers = {
-    'cookie': cookie,
-}
+session = requests.Session()
+cookie = ''
+session.headers.update({
+    'Cookie': cookie,
+})
 
+def sendmessage(message):
+    webhook = DiscordWebhook(url=Webhook, content=message)
+    webhook.execute()
 
-
-while True and bundle == 0:
-    try:
-        data = requests.get(f"https://economy.roblox.com/v2/assets/{ID}/details", headers=headers)
-        status = data.status_code
-        print(f"Status code: {data.status_code}")
-        data = data.json()
-
-        sale = data.get("IsForSale", True)
-        name = data.get("Name", [])
-
-
-        price = data.get("PriceInRobux", [])
-
-        if first == 0:
-            webhook = DiscordWebhook(url=Webhook, content=f"Sniper has been set to target **{name}** (https://roblox.com/catalog/{ID})")
-            response = webhook.execute()
-            first = 1
-        
-        if sale:
-            if onsale == 0 and status == 200:               
-                print(f"{name} Is onsale for {price}")
-                webhook = DiscordWebhook(url=Webhook, content=f" **{name}** Is **onsale** for **{price} Robux!** \nBuy it here: https://roblox.com/catalog/{ID}")
-                response = webhook.execute()
-                onsale = 1
-                offsale = 0
-                if pricechange == 0:
-                    firstprice = price
-                    print(f"defaulting original price to {firstprice} Robux")
-                time.sleep(timeperrequest)
-            elif onsale == 1:
-                if price != firstprice:
-                    print("price changed")
-                    webhook = DiscordWebhook(url=Webhook, content=f"**{name}** https://roblox.com/catalog/{ID} 's price has changed from **{firstprice} Robux** to **{price} Robux**")
-                    response = webhook.execute()
-                    pricechange = 0
-                    firstprice = price
-                    print(f"defaulting original price to {firstprice} Robux")
-                print("still onsale!")
-                time.sleep(timeperrequest)
-                    
-            elif status == 429:
-                print("Too many requests")
-                time.sleep(timeperrequest)
-            
+def getnames():
+    global idstat
+    names = []
+    for id in IDS:
+        ar = session.get(f'https://economy.roblox.com/v2/assets/{id}/details').json()
+        name = ar['Name']
+        yes = ar['IsForSale']
+        price = ar['PriceInRobux']
+        idstat[id] = {
+                'sale': yes,
+                'price': price,
+                'name': name
+                }
+        if yes:
+            names.append(f"[{name}](<https://roblox.com/catalog/{id}>) {price}\n")
         else:
-            if offsale == 0:           
-                print("offsale")
-                webhook = DiscordWebhook(url=Webhook, content=f"**{name}** is **offsale** :(")
-                response = webhook.execute()
-                onsale = 0
-                offsale = 1
-                time.sleep(timeperrequest)
-            elif offsale == 1:
-                print("still offsale")
-                time.sleep(timeperrequest)
-    except:
-        print("crash")
-
-while True and bundle == 1:   
-    try:
-        data = requests.get(f"https://catalog.roblox.com/v1/bundles/{ID}/details", headers=headers)
-        status = data.status_code
-        print(f"Status code: {data.status_code}")
-        data = data.json()
-    
-        sale = data.get("product", {}).get("isForSale")
-        name = data.get("name", [])
-    
-    
-        price = data.get("product", {}).get("priceInRobux", [])
-    
-        if first == 0:
-            webhook = DiscordWebhook(url=Webhook, content=f"Sniper has been set to target bundle **{name}** (https://roblox.com/bundles/{ID})")
-            response = webhook.execute()
-            first = 1
+            names.append(f"[{name}](<https://roblox.com/catalog/{id}>) :x:\n")
         
-        if sale:
-            if onsale == 0 and status == 200:               
-                print(f"{name} Is onsale for {price}")
-                webhook = DiscordWebhook(url=Webhook, content=f"**{name}** Is **onsale** for **{price} Robux!** \nBuy it here: https://roblox.com/bundles/{ID}")
-                response = webhook.execute()
-                onsale = 1
-                offsale = 0
-                if pricechange == 0:
-                    firstprice = price
-                    print(f"defaulting original price to {firstprice} Robux")
-                time.sleep(timeperrequest)
-            elif onsale == 1:
-                if price != firstprice:
-                    print("price changed")
-                    webhook = DiscordWebhook(url=Webhook, content=f"**{name}** https://roblox.com/bundles/{ID} 's price has changed from **{firstprice} Robux** to **{price} Robux**")
-                    response = webhook.execute()
-                    pricechange = 0
-                    firstprice = price
-                    print(f"defaulting original price to {firstprice} Robux")
-                print("still onsale!")
-                time.sleep(timeperrequest)
-                    
-            elif status == 429:
-                print("Too many requests")
-                time.sleep(timeperrequest)
-            
-        else:
-            if offsale == 0:           
-                print("offsale")
-                webhook = DiscordWebhook(url=Webhook, content=f"**{name}** is **offsale** :(")
-                response = webhook.execute()
-                onsale = 0
-                offsale = 1
-                time.sleep(timeperrequest)
-            elif offsale == 1:
-                print("still offsale")
-                time.sleep(timeperrequest)
+    return ''.join(names)
+
+def checkitem(id):
+    global idstat
+    sale = idstat[id]['sale']
+    price = idstat[id]['price']
+    ar = session.get(f'https://economy.roblox.com/v2/assets/{id}/details').json()
+    newsale = ar['IsForSale']
+    newprice = ar['PriceInRobux']
+
+    if newsale != sale:
+        idstat[id]['sale'] = newsale
+        idstat[id]['price'] = newprice
+        return 1
+    else:
+        if newprice != price:
+            idstat[id]['price'] = newprice
+            return 2
+        return 3
+    
+
+sendmessage(f"**Sniper** is targetting **{len(IDS)}** items :\n{getnames()}")
+
+while True:
+    try:
+        for id in IDS:
+            info = idstat[id]
+            status = checkitem(id)
+            if status == 1:
+                if info['sale']:
+                   sendmessage(f"[{info['name']}](https://roblox.com/catalog/{id}) is **ONSALE** for **{info['price']}**")
+                else:
+                    sendmessage(f"[{info['name']}](<https://roblox.com/catalog/{id}>) went OFFSALE")
+            elif status == 2:
+                sendmessage(f"[{info['name']}](<https://roblox.com/catalog/{id}>) price changed to {info['price']}")
+            elif status == 3:
+                pass
+            time.sleep(timeperrequest)
     except:
-        print("crash")
+        time.sleep(15)
+
+
+    
